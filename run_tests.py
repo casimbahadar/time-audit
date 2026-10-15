@@ -55,7 +55,7 @@ with sync_playwright() as pw:
     # summary and copy
     s = p.input_value("#summary")
     check("summary: task name, total, ranked steps, the not-time-saved line and the demo link",
-          s.startswith("Task: Monthly customer invoicing") and "158.9 hours a year, about $5,561.50 at $35.00 an hour." in s and "1. Copy hours into the invoice template: 60.0 hours ($2,100.00). Follows fixed rules." in s and "not time saved" in s and "casimbahadar.github.io/demo-time-audit/" in s, s)
+          s.startswith("Task: Monthly customer invoicing") and "158.9 hours a year, about $5,561.50 at $35.00 an hour." in s and "1. Copy hours into the invoice template: 60.0 hours ($2,100.00). Follows fixed rules." in s and "not time saved" in s and "casimbahadar.github.io/time-audit/" in s, s)
     check("summary box is tall enough to show all of it", p.evaluate("(() => { const t = document.getElementById('summary'); return t.scrollHeight <= t.clientHeight + 2; })()"))
     p.bring_to_front(); p.click("#btn-copy"); p.wait_for_timeout(600)
     cp = p.inner_text("#copied")

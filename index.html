@@ -6,7 +6,7 @@
 <title>Workflow time audit demo | Casim Bahadar</title>
 <meta name="description" content="List the steps of a task you repeat and see which steps take the most hours a year, worked out only from your own numbers with the formula shown. Runs in your browser.">
 <meta name="theme-color" content="#F7F5FB">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-7/L2w2Q7HQZeXILVF/rWvPQSReDte7CtiaA/hmcRjys='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-0gGYha9AnRN4Htmtuy81jI++9yyaMu9vO2n0QaZA1dY='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Crect x=%275%27 y=%271%27 width=%2710%27 height=%2710%27 rx=%272%27 fill=%27%23A993E4%27/%3E%3Crect x=%271%27 y=%275%27 width=%2710%27 height=%2710%27 rx=%272%27 fill=%27%235A3DB8%27/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -419,7 +419,7 @@ window.Audit = Audit;
 (() => {
   const $ = id => document.getElementById(id);
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const URL_SELF = "https://casimbahadar.github.io/demo-time-audit/";
+  const URL_SELF = "https://casimbahadar.github.io/time-audit/";
   const blank = () => ({ name: "", minutes: "", count: "", per: "week", people: "1", wrong: "", fix: "", rules: "" });
   let seq = 0;
   const withId = s => Object.assign({ id: "s" + (++seq) }, s);

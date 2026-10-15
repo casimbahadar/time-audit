@@ -2,7 +2,7 @@
 
 A browser tool for finding where the time goes in a task you repeat. You list the steps, and it ranks them by hours a year, worked out only from the numbers you type. It is a demo with made-up sample data.
 
-Live: https://casimbahadar.github.io/demo-time-audit/
+Live: https://casimbahadar.github.io/time-audit/
 
 ## What it does
 
