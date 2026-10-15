@@ -1,0 +1,76 @@
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="wordmark" href="https://casimbahadar.github.io/"><span class="mark" aria-hidden="true"></span>Casim Bahadar</a>
+    <span class="demo-flag">Demo with made-up data</span>
+  </div>
+</header>
+
+<main id="main">
+  <div class="wrap intro intro-short">
+    <h1>Find where a repeated task's time goes</h1>
+    <p class="lede">List the steps, and see which ones take the most hours a year, from your numbers only.</p>
+    <div class="actions">
+      <button class="btn btn-primary" id="btn-sample" type="button">Load sample data</button>
+      <button class="btn btn-quiet" id="btn-start" type="button">Start with my own task</button>
+    </div>
+    <div class="privacy"><p><strong>Nothing is saved or sent.</strong> Everything is worked out in your browser, the page's security settings block it from sending data anywhere, and closing the page clears it.</p></div>
+  </div>
+
+  <section class="wrap step" aria-labelledby="h-steps">
+    <div class="step-head"><span class="step-num" aria-hidden="true">1</span><h2 id="h-steps" tabindex="-1">Describe the task</h2></div>
+    <div class="settings">
+      <div class="field"><label for="f-process">Name of the task</label><input type="text" id="f-process" autocomplete="off" placeholder="For example, monthly invoicing"></div>
+      <div class="field"><label for="f-rate">Hourly cost ($)</label><span class="help" id="h-rate">Wage plus overhead, your best guess</span><input type="text" id="f-rate" inputmode="decimal" autocomplete="off" aria-describedby="h-rate e-rate"><span class="err" id="e-rate"></span></div>
+      <div class="field"><label for="f-days">Working days a year</label><span class="help" id="h-days">Used for daily steps</span><input type="text" id="f-days" inputmode="numeric" autocomplete="off" value="250" aria-describedby="h-days e-days"><span class="err" id="e-days"></span></div>
+    </div>
+    <ol class="steps" id="steps"></ol>
+    <div class="undo" id="undo" hidden><p id="undo-text"></p><button class="btn btn-quiet" id="btn-undo" type="button">Undo</button></div>
+    <div class="actions" style="max-width: 40rem"><button class="btn btn-quiet" id="btn-add" type="button">Add a step</button></div>
+  </section>
+
+  <section class="wrap step" aria-labelledby="h-results">
+    <div class="step-head"><span class="step-num" aria-hidden="true">2</span><h2 id="h-results" tabindex="-1">Where the time goes</h2></div>
+    <p class="total-line" id="total" aria-live="polite"></p>
+    <div class="excluded" id="excluded" hidden></div>
+    <div class="honest" style="margin-top: var(--s4)"><p>These are the hours the task takes now, worked out only from the numbers above. They are not an estimate of time saved. Automating a step rarely removes all of its time, and how much it removes depends on the step.</p></div>
+
+    <h3>Steps ranked by hours a year</h3>
+    <p class="small muted">The "fixed rules" answer doesn't change the order. It's there to help you and a developer talk about which steps software could take over.</p>
+    <ol class="ranked" id="ranked"></ol>
+
+    <h3>How it's worked out</h3>
+    <div class="formula" id="formula">
+      <p><code>Hours a year = (minutes each time × times a year × people + times a year × share that goes wrong × minutes to fix × people) ÷ 60</code></p>
+      <p>Times a year: per working day × <span id="days-echo">250</span>, per week × 52, per month × 12, per year × 1.</p>
+      <p><code>Cost a year = hours a year × hourly cost</code></p>
+      <p id="worked"></p>
+    </div>
+
+    <h3>Summary to keep</h3>
+    <label class="block" for="summary">Summary text</label>
+    <textarea class="summary-box" id="summary" readonly></textarea>
+    <div class="actions">
+      <button class="btn btn-primary" id="btn-copy" type="button">Copy summary</button>
+      <button class="btn btn-quiet" id="btn-csv" type="button">Download as CSV</button>
+    </div>
+    <p class="small muted" id="copied" role="status"></p>
+    <p><a href="https://casimbahadar.github.io/contact.html">Talk to Casim about the steps at the top of your list</a></p>
+    <p class="sr-only" id="announce" aria-live="polite"></p>
+  </section>
+
+  <aside class="wrap biz" aria-labelledby="h-biz">
+    <div class="biz-box">
+      <h2 id="h-biz">What this would look like for your business</h2>
+      <p>We'd go through one of your repeated tasks together and fill this in with real numbers. For the steps at the top, I'd tell you plainly which ones software can take over, which ones it can only speed up, and which ones are better left to a person, and what building each would involve.</p>
+      <p><a href="https://casimbahadar.github.io/contact.html">Get in touch about your task</a></p>
+    </div>
+  </aside>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Built by Casim Bahadar, solutions developer in Kitchener-Waterloo, Ontario.</p>
+    <p><a href="https://casimbahadar.github.io/work.html">See more work</a> or <a href="https://casimbahadar.github.io/contact.html">get in touch</a>.</p>
+  </div>
+</footer>

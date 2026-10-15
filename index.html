@@ -1,0 +1,596 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Workflow time audit demo | Casim Bahadar</title>
+<meta name="description" content="List the steps of a task you repeat and see which steps take the most hours a year, worked out only from your own numbers with the formula shown. Runs in your browser.">
+<meta name="theme-color" content="#F7F5FB">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-7/L2w2Q7HQZeXILVF/rWvPQSReDte7CtiaA/hmcRjys='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Crect x=%275%27 y=%271%27 width=%2710%27 height=%2710%27 rx=%272%27 fill=%27%23A993E4%27/%3E%3Crect x=%271%27 y=%275%27 width=%2710%27 height=%2710%27 rx=%272%27 fill=%27%235A3DB8%27/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400..900&display=swap">
+<style>
+
+/* Tokens. Spacing sits on a 4px scale, radii on three sizes. */
+:root {
+  --paper: #F7F5FB; --mist: #EDE8F7; --lav: #D8CCF3; --violet: #5A3DB8; --violet-deep: #432C93;
+  --ink: #221B35; --slate: #5F5873; --line: #DDD5EE; --error: #A32A3C; --error-bg: #FBEAEE; --changed-bg: #FFF6DB;
+  --s1: 0.25rem; --s2: 0.5rem; --s3: 0.75rem; --s4: 1rem; --s6: 1.5rem; --s8: 2rem; --s12: 3rem; --s16: 4rem;
+  --r-sm: 4px; --r-md: 12px; --r-pill: 999px;
+  --gutter: var(--s4);
+  --font: "Schibsted Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  color-scheme: light;
+}
+@media (min-width: 40rem) { :root { --gutter: var(--s8); } }
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font);
+  font-size: 1rem; line-height: 1.6; -webkit-font-smoothing: antialiased;
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+}
+@media (min-width: 40rem) { body { font-size: 1.0625rem; } }
+h1, h2, h3, h4 { margin: 0 0 var(--s3); line-height: 1.15; letter-spacing: -0.02em; text-wrap: balance; }
+h1 { font-size: clamp(2rem, 1.4rem + 3vw, 3.2rem); font-weight: 850; letter-spacing: -0.035em; margin-bottom: var(--s4); }
+h2 { font-size: clamp(1.4rem, 1.1rem + 1.2vw, 1.9rem); font-weight: 800; margin: 0; }
+h3 { font-size: 1.2rem; font-weight: 750; margin-top: var(--s12); }
+h4 { font-size: 1.05rem; font-weight: 750; margin-bottom: var(--s1); }
+p { margin: 0 0 var(--s4); max-width: 64ch; }
+a { color: var(--violet); text-decoration-thickness: 1.5px; text-underline-offset: 0.2em; }
+@media (hover: hover) { a:hover { color: var(--violet-deep); } }
+:focus-visible { outline: 3px solid var(--violet); outline-offset: 3px; border-radius: var(--r-sm); }
+.wrap { max-width: 62rem; margin-inline: auto; padding-inline: var(--gutter); }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+.topbar { border-bottom: 1px solid var(--line); }
+.topbar .wrap { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); flex-wrap: wrap; padding-block: var(--s4); }
+.wordmark { display: inline-flex; align-items: center; gap: var(--s3); min-height: 2.75rem; color: var(--ink); font-weight: 800; letter-spacing: -0.02em; text-decoration: none; }
+.mark { width: 1rem; height: 1rem; border-radius: var(--r-sm); background: var(--violet); box-shadow: 4px -4px 0 -1px #A993E4; margin-top: var(--s1); }
+.demo-flag { font-size: 0.9375rem; font-weight: 650; color: var(--slate); }
+
+.intro { padding-block: var(--s8) var(--s6); }
+.lede { font-size: 1.125rem; }
+.privacy { max-width: 44rem; margin: 0; padding: var(--s4); background: var(--mist); border-radius: var(--r-md); }
+.privacy p { margin: 0; }
+.privacy strong { font-weight: 750; }
+
+.step { padding-block: var(--s8); border-top: 1px solid var(--line); }
+.step-head { display: flex; align-items: center; gap: var(--s3); margin-bottom: var(--s4); }
+.step-num { flex: none; display: inline-grid; place-items: center; width: 2rem; height: 2rem; border-radius: var(--r-pill); background: var(--ink); color: var(--paper); font-weight: 800; font-size: 1rem; }
+.muted { color: var(--slate); }
+.small { font-size: 0.9375rem; }
+
+/* One button system. Groups decide width: full width stacked on phones, equal widths in a row. */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; text-align: center;
+  min-height: 3rem; padding: var(--s3) var(--s6);
+  border: 2px solid transparent; border-radius: var(--r-pill);
+  font: inherit; font-size: 1rem; font-weight: 650; line-height: 1.2; text-decoration: none; cursor: pointer;
+}
+.btn-primary { background: var(--violet); color: #fff; }
+.btn-quiet { border-color: var(--ink); color: var(--ink); background: transparent; }
+@media (hover: hover) {
+  .btn-primary:hover { background: var(--violet-deep); color: #fff; }
+  .btn-quiet:hover { background: var(--ink); color: var(--paper); }
+}
+.btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+.actions { display: flex; flex-direction: column; gap: var(--s3); margin-block: var(--s4); }
+.actions > .btn { width: 100%; }
+@media (min-width: 40rem) {
+  .actions { flex-direction: row; flex-wrap: wrap; }
+  .actions > .btn { flex: 1 1 0; width: auto; max-width: 16rem; }
+}
+
+details { margin-top: var(--s4); }
+summary { cursor: pointer; font-weight: 650; color: var(--violet); min-height: 2.75rem; display: flex; align-items: center; }
+textarea { width: 100%; min-height: 10rem; font: 1rem/1.5 ui-monospace, "SF Mono", Menlo, Consolas, monospace; padding: var(--s3); border: 1.5px solid var(--slate); border-radius: var(--r-md); background: #fff; color: var(--ink); }
+label.block { display: block; font-weight: 650; margin-bottom: var(--s2); }
+select { font: inherit; font-size: 1rem; min-height: 2.75rem; padding: var(--s1) var(--s2); border: 1.5px solid var(--slate); border-radius: var(--r-md); background: #fff; color: var(--ink); max-width: 100%; }
+input[type="checkbox"], input[type="radio"] { width: 1.25rem; height: 1.25rem; accent-color: var(--violet); margin: 0; flex: none; }
+
+.status { font-weight: 650; margin: var(--s3) 0 0; }
+.alert { margin-top: var(--s4); padding: var(--s3) var(--s4); border-radius: var(--r-md); background: var(--error-bg); color: var(--error); font-weight: 650; border: 1.5px solid var(--error); }
+.info { margin-top: var(--s4); padding: var(--s3) var(--s4); border-radius: var(--r-md); background: var(--mist); }
+.alert:empty, .info:empty { display: none; }
+.stale { margin: 0 0 var(--s6); padding: var(--s3) var(--s4); border-radius: var(--r-md); background: var(--changed-bg); border: 1.5px solid #8A6A12; font-weight: 650; }
+
+.scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--line); border-radius: var(--r-md); background: #fff; }
+table { border-collapse: collapse; width: 100%; font-size: 0.9375rem; }
+th, td { text-align: left; padding: var(--s3) var(--s4); border-bottom: 1px solid var(--line); vertical-align: top; }
+th { background: var(--mist); font-weight: 700; white-space: nowrap; }
+tr:last-child td, tr:last-child th { border-bottom: 0; }
+td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.check { display: flex; align-items: center; gap: var(--s2); min-height: 2.75rem; cursor: pointer; }
+.map-table td { vertical-align: middle; }
+.ws { display: inline-block; min-width: 0.6em; color: var(--violet); font-weight: 700; }
+.empty-val { color: var(--slate); font-style: italic; }
+
+fieldset { border: 0; padding: 0; margin: var(--s6) 0 0; }
+legend { font-weight: 700; margin-bottom: var(--s2); padding: 0; }
+.radio { display: flex; align-items: center; gap: var(--s3); min-height: 2.75rem; }
+
+.summary-line { font-size: 1.125rem; font-weight: 600; max-width: 60ch; }
+.summary-line b { font-weight: 850; }
+.jump { display: flex; flex-wrap: wrap; gap: var(--s2) var(--s4); margin: 0; padding: 0; list-style: none; }
+.jump a { display: inline-flex; align-items: center; min-height: 2.75rem; font-weight: 650; }
+
+.cellmap { margin: 0; }
+.cellmap svg { display: block; max-width: 100%; height: auto; }
+.legend { display: flex; flex-wrap: wrap; gap: var(--s2) var(--s6); margin: var(--s3) 0 0; padding: 0; list-style: none; font-size: 0.9375rem; }
+.legend li { display: flex; align-items: center; gap: var(--s2); }
+.sw { width: 1rem; height: 1rem; border-radius: var(--r-sm); display: inline-block; }
+.sw-same { background: var(--line); }
+.sw-changed { background: var(--violet); }
+.sw-flag { background: var(--error); background-image: repeating-linear-gradient(45deg, transparent 0 2px, rgba(255,255,255,.55) 2px 4px); }
+figcaption { font-size: 0.9375rem; color: var(--slate); margin-top: var(--s2); }
+
+.charts { display: grid; gap: 0 var(--s12); }
+.charts > div { min-width: 0; }
+@media (min-width: 52rem) { .charts { grid-template-columns: 1fr 1fr; } }
+.bars { display: grid; gap: var(--s3); max-width: 40rem; }
+.bar-row { display: grid; grid-template-columns: 1fr 2.5rem; align-items: center; gap: var(--s1) var(--s3); font-size: 0.9375rem; }
+.bar-row .bar-track { grid-column: 1 / -1; grid-row: 2; }
+.bar-track { display: block; height: 1rem; background: var(--mist); border-radius: var(--r-pill); overflow: hidden; }
+.bar-fill { display: block; height: 100%; background: var(--violet); border-radius: var(--r-pill); }
+.bars.problems .bar-fill { background: var(--error); }
+.bar-row .n { font-weight: 800; font-variant-numeric: tabular-nums; text-align: right; }
+
+.pairs { display: grid; gap: var(--s4); }
+.pair { min-width: 0; border: 1.5px solid var(--line); border-radius: var(--r-md); padding: var(--s4); background: #fff; }
+.pair.is-merged { border-color: var(--violet); background: var(--mist); }
+.pair.is-kept { background: var(--paper); }
+.pair .reason { margin: 0 0 var(--s3); color: var(--slate); font-size: 0.9375rem; }
+.pair table { table-layout: fixed; font-size: 0.875rem; }
+.pair th, .pair td { white-space: normal; overflow-wrap: anywhere; padding: var(--s2) var(--s3); }
+.pair thead th:first-child { width: 30%; }
+.pair th { overflow-wrap: normal; }
+.pair td.diff { background: var(--changed-bg); font-weight: 650; }
+.pair .outcome { font-weight: 650; margin: var(--s3) 0 0; }
+.kind { display: inline-block; font-size: 0.875rem; font-weight: 700; padding: 0 var(--s2); border-radius: var(--r-pill); background: var(--lav); margin-left: var(--s2); vertical-align: 0.1em; }
+
+.req-text { font-size: 0.9375rem; }
+@media (min-width: 40.01rem) { .req-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); } }
+@media (max-width: 40rem) {
+  .stack thead, .map-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .stack tr { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s2) var(--s4); padding: var(--s3) var(--s4); border-bottom: 1px solid var(--line); }
+  .stack tr:last-child { border-bottom: 0; }
+  .stack td { display: block; padding: 0; border: 0; overflow-wrap: anywhere; }
+  .stack td::before { content: attr(data-label); display: block; font-size: 0.875rem; font-weight: 650; color: var(--slate); }
+  .stack td:nth-child(n+5) { grid-column: 1 / -1; }
+  .stack td:nth-child(1), .stack td:nth-child(2) { font-weight: 750; }
+  .stack td:nth-child(1)::before { content: "Row "; display: inline; font: inherit; color: inherit; }
+  .stack td:nth-child(2)::before { display: none; }
+  .stack td.num { white-space: normal; }
+  .stack-wrap.scroll, .map-wrap.scroll { overflow-x: visible; }
+  .map-table tr { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: var(--s1) var(--s4); padding: var(--s3) var(--s4); border-bottom: 1px solid var(--line); }
+  .map-table tr:last-child { border-bottom: 0; }
+  .map-table th { grid-column: 1 / -1; background: none; padding: 0; border: 0; white-space: normal; }
+  .map-table td { padding: 0; border: 0; }
+  .map-table td:last-child { grid-column: 1 / -1; font-size: 0.875rem; color: var(--slate); overflow-wrap: anywhere; }
+  .map-table td:last-child::before { content: "First value: "; }
+  .map-table select { width: 100%; }
+}
+
+.biz { margin-block: var(--s8); }
+.biz-box { max-width: 44rem; padding: var(--s6); background: var(--mist); border-radius: var(--r-md); }
+.biz-box h2 { font-size: 1.35rem; margin-bottom: var(--s2); }
+.biz-box p:last-child { margin-bottom: 0; }
+footer { border-top: 1px solid var(--line); padding-block: var(--s6) var(--s12); font-size: 0.9375rem; color: var(--slate); }
+footer p { margin: 0 0 var(--s2); }
+
+[hidden] { display: none !important; }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; animation: none !important; } }
+
+/* Demo 4 additions */
+.scroll { position: relative; }
+.intro-short { padding-bottom: 0; }
+.field { margin: 0 0 var(--s4); }
+.field > label, fieldset.field > legend { display: block; font-weight: 700; margin-bottom: var(--s1); font-size: 0.9375rem; }
+.help { display: block; font-size: 0.875rem; color: var(--slate); margin-bottom: var(--s1); }
+input[type="text"] { width: 100%; font: inherit; font-size: 1rem; min-height: 3rem; padding: var(--s2) var(--s3); border: 1.5px solid var(--slate); border-radius: var(--r-md); background: #fff; color: var(--ink); }
+select.full { width: 100%; min-height: 3rem; }
+[aria-invalid="true"] { border-color: var(--error) !important; border-width: 2px !important; }
+.err { display: block; color: var(--error); font-weight: 650; font-size: 0.875rem; margin-top: var(--s1); }
+.err:empty { display: none; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 var(--s3); align-items: end; }
+.grid2 > .field { min-width: 0; }
+.settings { display: grid; gap: 0 var(--s4); max-width: 40rem; }
+@media (min-width: 40rem) { .settings { grid-template-columns: 2fr 1fr 1fr; } }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s4); max-width: 40rem; }
+.step-card { padding: var(--s4); border: 1.5px solid var(--line); border-radius: var(--r-md); background: #fff; }
+.step-card h3 { margin: 0 0 var(--s3); font-size: 1.05rem; }
+.often { display: grid; grid-template-columns: 6rem 1fr; gap: var(--s2); }
+.field > .label { display: block; font-weight: 700; margin-bottom: var(--s1); font-size: 0.9375rem; }
+.rules-choice { display: grid; gap: 0; }
+.choice, .field > label.choice { display: flex; align-items: center; gap: var(--s3); min-height: 2.75rem; font-size: 0.9375rem; font-weight: 500; margin: 0; }
+.step-card .actions { margin-bottom: 0; }
+.undo { margin: var(--s4) 0 0; padding: var(--s3) var(--s4); border-radius: var(--r-md); background: var(--mist); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s2); max-width: 40rem; }
+.undo p { margin: 0; }
+.total-line { font-size: 1.125rem; font-weight: 600; max-width: 60ch; }
+.total-line b { font-weight: 850; }
+.honest { max-width: 44rem; padding: var(--s4); background: var(--mist); border-radius: var(--r-md); }
+.honest p { margin: 0; }
+.ranked { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s4); max-width: 44rem; }
+.rank-item { display: grid; grid-template-columns: 2rem 1fr; gap: var(--s1) var(--s3); padding: var(--s4); border: 1.5px solid var(--line); border-radius: var(--r-md); background: #fff; }
+.rank-num { grid-row: span 3; display: inline-grid; place-items: center; width: 2rem; height: 2rem; border-radius: var(--r-pill); background: var(--ink); color: var(--paper); font-weight: 800; }
+.rank-item h4 { margin: 0; font-size: 1.05rem; overflow-wrap: anywhere; }
+.rank-figs { display: flex; flex-wrap: wrap; gap: var(--s1) var(--s4); font-variant-numeric: tabular-nums; }
+.rank-figs b { font-weight: 850; }
+.rank-bar { height: 0.75rem; background: var(--mist); border-radius: var(--r-pill); overflow: hidden; }
+.rank-bar span { display: block; height: 100%; background: var(--violet); border-radius: var(--r-pill); }
+.rank-how { grid-column: 2; font-size: 0.875rem; color: var(--slate); margin: 0; }
+.tag { display: inline-block; font-size: 0.875rem; font-weight: 700; padding: 0 var(--s2); border-radius: var(--r-md); background: var(--lav); }
+.formula { max-width: 44rem; padding: var(--s4); border: 1.5px solid var(--line); border-radius: var(--r-md); background: #fff; }
+.formula p { margin: 0 0 var(--s2); }
+.formula p:last-child { margin: 0; }
+.formula code { font-family: inherit; font-weight: 700; }
+.summary-box { width: 100%; max-width: 44rem; min-height: 12rem; font: inherit; font-size: 1rem; line-height: 1.5; padding: var(--s3); border: 1.5px solid var(--line); border-radius: var(--r-md); background: #fff; color: var(--ink); }
+.excluded { max-width: 44rem; padding: var(--s3) var(--s4); border-radius: var(--r-md); background: var(--changed-bg); border: 1.5px solid #8A6A12; }
+.excluded p { margin: 0; }
+.excluded ul { margin: var(--s2) 0 0; padding-left: var(--s6); }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="wordmark" href="https://casimbahadar.github.io/"><span class="mark" aria-hidden="true"></span>Casim Bahadar</a>
+    <span class="demo-flag">Demo with made-up data</span>
+  </div>
+</header>
+
+<main id="main">
+  <div class="wrap intro intro-short">
+    <h1>Find where a repeated task's time goes</h1>
+    <p class="lede">List the steps, and see which ones take the most hours a year, from your numbers only.</p>
+    <div class="actions">
+      <button class="btn btn-primary" id="btn-sample" type="button">Load sample data</button>
+      <button class="btn btn-quiet" id="btn-start" type="button">Start with my own task</button>
+    </div>
+    <div class="privacy"><p><strong>Nothing is saved or sent.</strong> Everything is worked out in your browser, the page's security settings block it from sending data anywhere, and closing the page clears it.</p></div>
+  </div>
+
+  <section class="wrap step" aria-labelledby="h-steps">
+    <div class="step-head"><span class="step-num" aria-hidden="true">1</span><h2 id="h-steps" tabindex="-1">Describe the task</h2></div>
+    <div class="settings">
+      <div class="field"><label for="f-process">Name of the task</label><input type="text" id="f-process" autocomplete="off" placeholder="For example, monthly invoicing"></div>
+      <div class="field"><label for="f-rate">Hourly cost ($)</label><span class="help" id="h-rate">Wage plus overhead, your best guess</span><input type="text" id="f-rate" inputmode="decimal" autocomplete="off" aria-describedby="h-rate e-rate"><span class="err" id="e-rate"></span></div>
+      <div class="field"><label for="f-days">Working days a year</label><span class="help" id="h-days">Used for daily steps</span><input type="text" id="f-days" inputmode="numeric" autocomplete="off" value="250" aria-describedby="h-days e-days"><span class="err" id="e-days"></span></div>
+    </div>
+    <ol class="steps" id="steps"></ol>
+    <div class="undo" id="undo" hidden><p id="undo-text"></p><button class="btn btn-quiet" id="btn-undo" type="button">Undo</button></div>
+    <div class="actions" style="max-width: 40rem"><button class="btn btn-quiet" id="btn-add" type="button">Add a step</button></div>
+  </section>
+
+  <section class="wrap step" aria-labelledby="h-results">
+    <div class="step-head"><span class="step-num" aria-hidden="true">2</span><h2 id="h-results" tabindex="-1">Where the time goes</h2></div>
+    <p class="total-line" id="total" aria-live="polite"></p>
+    <div class="excluded" id="excluded" hidden></div>
+    <div class="honest" style="margin-top: var(--s4)"><p>These are the hours the task takes now, worked out only from the numbers above. They are not an estimate of time saved. Automating a step rarely removes all of its time, and how much it removes depends on the step.</p></div>
+
+    <h3>Steps ranked by hours a year</h3>
+    <p class="small muted">The "fixed rules" answer doesn't change the order. It's there to help you and a developer talk about which steps software could take over.</p>
+    <ol class="ranked" id="ranked"></ol>
+
+    <h3>How it's worked out</h3>
+    <div class="formula" id="formula">
+      <p><code>Hours a year = (minutes each time × times a year × people + times a year × share that goes wrong × minutes to fix × people) ÷ 60</code></p>
+      <p>Times a year: per working day × <span id="days-echo">250</span>, per week × 52, per month × 12, per year × 1.</p>
+      <p><code>Cost a year = hours a year × hourly cost</code></p>
+      <p id="worked"></p>
+    </div>
+
+    <h3>Summary to keep</h3>
+    <label class="block" for="summary">Summary text</label>
+    <textarea class="summary-box" id="summary" readonly></textarea>
+    <div class="actions">
+      <button class="btn btn-primary" id="btn-copy" type="button">Copy summary</button>
+      <button class="btn btn-quiet" id="btn-csv" type="button">Download as CSV</button>
+    </div>
+    <p class="small muted" id="copied" role="status"></p>
+    <p><a href="https://casimbahadar.github.io/contact.html">Talk to Casim about the steps at the top of your list</a></p>
+    <p class="sr-only" id="announce" aria-live="polite"></p>
+  </section>
+
+  <aside class="wrap biz" aria-labelledby="h-biz">
+    <div class="biz-box">
+      <h2 id="h-biz">What this would look like for your business</h2>
+      <p>We'd go through one of your repeated tasks together and fill this in with real numbers. For the steps at the top, I'd tell you plainly which ones software can take over, which ones it can only speed up, and which ones are better left to a person, and what building each would involve.</p>
+      <p><a href="https://casimbahadar.github.io/contact.html">Get in touch about your task</a></p>
+    </div>
+  </aside>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Built by Casim Bahadar, solutions developer in Kitchener-Waterloo, Ontario.</p>
+    <p><a href="https://casimbahadar.github.io/work.html">See more work</a> or <a href="https://casimbahadar.github.io/contact.html">get in touch</a>.</p>
+  </div>
+</footer>
+<script>/* CORE-START: pure functions, no page access. Tests call these through window.Audit. */
+const Audit = (() => {
+  const PERIODS = [["day", "per working day"], ["week", "per week"], ["month", "per month"], ["year", "per year"]];
+  const RULES = [["yes", "Yes, fixed rules"], ["partly", "Partly"], ["no", "No, needs judgment"]];
+  const RULE_TAG = { yes: "Follows fixed rules", partly: "Partly fixed rules", no: "Needs judgment", "": "Rules not answered" };
+
+  // Numbers as people type them: "1,5" and "1.5" both work; "$" and "%" are ignored.
+  function num(s) {
+    let v = String(s == null ? "" : s).trim().replace(/[\s$%]/g, "");
+    if (v === "") return null;
+    if (/^\d+,\d+$/.test(v)) v = v.replace(",", ".");
+    v = v.replace(/,/g, "");
+    return /^\d+(\.\d+)?$/.test(v) ? parseFloat(v) : NaN;
+  }
+  function perYear(count, per, days) {
+    return count * ({ day: days, week: 52, month: 12, year: 1 }[per] || 0);
+  }
+  function checkSettings(rate, days) {
+    const e = {}, r = num(rate), d = num(days);
+    if (r === null) e.rate = "Enter an hourly cost, like 35.";
+    else if (Number.isNaN(r)) e.rate = "Enter a number, like 35.";
+    if (d === null || Number.isNaN(d) || d < 1 || d > 366 || !Number.isInteger(d)) e.days = "Enter a whole number of days from 1 to 366.";
+    return { errors: e, rate: e.rate ? null : r, days: e.days ? null : d };
+  }
+  function checkStep(s) {
+    const e = {}, v = {};
+    const need = (k, label) => { const x = num(s[k]); if (x === null) e[k] = "Enter " + label + "."; else if (Number.isNaN(x)) e[k] = "Enter a number."; return x; };
+    v.minutes = need("minutes", "the minutes it takes");
+    if (!e.minutes && v.minutes <= 0) e.minutes = "Enter more than 0 minutes.";
+    v.count = need("count", "how many times");
+    if (!e.count && v.count <= 0) e.count = "Enter more than 0.";
+    const p = num(s.people);
+    v.people = p === null ? 1 : p;
+    if (Number.isNaN(p) || (p !== null && (p < 1 || !Number.isInteger(p)))) e.people = "Enter a whole number, 1 or more.";
+    const w = num(s.wrong);
+    v.wrong = w === null ? 0 : w;
+    if (Number.isNaN(w) || (w !== null && w > 100)) e.wrong = "Enter a percentage from 0 to 100.";
+    const f = num(s.fix);
+    v.fix = f === null ? 0 : f;
+    if (Number.isNaN(f)) e.fix = "Enter a number.";
+    if (!e.wrong && !e.fix && v.wrong > 0 && v.fix === 0) e.fix = "Enter how long a fix takes, or set the percentage to 0.";
+    return { errors: e, value: v };
+  }
+  // All arithmetic is kept in minutes and only divided by 60 at the end.
+  function stepMinutes(v, per, days) {
+    const runs = perYear(v.count, per, days);
+    const base = v.minutes * runs * v.people;
+    const fixes = runs * (v.wrong / 100) * v.fix * v.people;
+    return { runs, base, fixes, total: base + fixes };
+  }
+  function compute(state) {
+    const set = checkSettings(state.rate, state.days);
+    const rows = [], excluded = [];
+    state.steps.forEach((s, i) => {
+      const c = checkStep(s);
+      const name = String(s.name || "").trim() || "Step " + (i + 1);
+      if (Object.keys(c.errors).length) { excluded.push({ index: i, name, errors: c.errors }); return; }
+      if (set.days === null && s.per === "day") { excluded.push({ index: i, name, errors: { days: "needs a valid number of working days" } }); return; }
+      const m = stepMinutes(c.value, s.per, set.days || 0);
+      rows.push({ index: i, name, rules: s.rules || "", per: s.per, v: c.value, runs: m.runs, base: m.base, fixes: m.fixes, minutes: m.total, hours: m.total / 60 });
+    });
+    rows.sort((a, b) => b.minutes - a.minutes || a.index - b.index);
+    const totalHours = rows.reduce((t, r) => t + r.hours, 0);
+    return { rows, excluded, totalHours, rate: set.rate, days: set.days, settingsErrors: set.errors };
+  }
+  const h1 = h => (Math.round(h * 10) / 10).toLocaleString("en-CA", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const money = x => "$" + (Math.round(x * 100) / 100).toLocaleString("en-CA", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const trim = x => String(Math.round(x * 100) / 100);
+  function howText(r) {
+    const people = r.v.people === 1 ? "1 person" : r.v.people + " people";
+    let s = "(" + trim(r.v.minutes) + " min × " + trim(r.runs) + " times × " + people;
+    if (r.fixes > 0) s += " + " + trim(r.runs) + " × " + trim(r.v.wrong) + "% × " + trim(r.v.fix) + " min × " + people;
+    return s + ") ÷ 60 = " + h1(r.hours) + " hours";
+  }
+  function summary(state, res, url) {
+    const name = String(state.process || "").trim() || "My task";
+    const lines = ["Task: " + name];
+    if (!res.rows.length) return lines.concat(["No steps with numbers yet."]).join("\n");
+    lines.push("Time it takes now: " + h1(res.totalHours) + " hours a year" + (res.rate !== null ? ", about " + money(res.totalHours * res.rate) + " at " + money(res.rate) + " an hour" : "") + ".");
+    lines.push("", "Steps by hours a year:");
+    res.rows.forEach((r, i) => lines.push((i + 1) + ". " + r.name + ": " + h1(r.hours) + " hours" + (res.rate !== null ? " (" + money(r.hours * res.rate) + ")" : "") + ". " + RULE_TAG[r.rules] + "."));
+    lines.push("", "These numbers come only from what I entered. They show time spent now, not time saved.", "Worked out with " + url);
+    return lines.join("\n");
+  }
+  const CSV_HEAD = ["Rank", "Step", "Minutes each time", "How many times", "How often", "Times a year", "People", "Goes wrong (%)", "Minutes to fix", "Hours a year", "Cost a year", "Follows fixed rules"];
+  function toCSV(res) {
+    const cell = x => { let s = String(x); if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; return /[",\r\n]|^\s|\s$/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+    const per = k => (PERIODS.find(p => p[0] === k) || ["", ""])[1];
+    const rows = res.rows.map((r, i) => [i + 1, r.name, trim(r.v.minutes), trim(r.v.count), per(r.per), trim(r.runs), r.v.people, trim(r.v.wrong), trim(r.v.fix),
+      (Math.round(r.hours * 100) / 100).toFixed(2), res.rate !== null ? (Math.round(r.hours * res.rate * 100) / 100).toFixed(2) : "", { yes: "Yes", partly: "Partly", no: "No", "": "" }[r.rules]]);
+    return [CSV_HEAD, ...rows].map(r => r.map(cell).join(",")).join("\r\n") + "\r\n";
+  }
+  const SAMPLE = {
+    process: "Monthly customer invoicing", rate: "35", days: "250",
+    steps: [
+      { name: "Export hours from the timesheet app", minutes: "15", count: "1", per: "month", people: "1", wrong: "5", fix: "30", rules: "yes" },
+      { name: "Copy hours into the invoice template", minutes: "6", count: "40", per: "month", people: "1", wrong: "10", fix: "15", rules: "yes" },
+      { name: "Answer billing questions in the shared inbox", minutes: "6", count: "1", per: "day", people: "1", wrong: "", fix: "", rules: "partly" },
+      { name: "Email invoices to customers", minutes: "2", count: "40", per: "month", people: "1", wrong: "2", fix: "10", rules: "yes" },
+      { name: "Chase late payments by phone", minutes: "10", count: "3", per: "week", people: "1", wrong: "", fix: "", rules: "partly" },
+      { name: "Monthly review meeting", minutes: "45", count: "1", per: "month", people: "3", wrong: "", fix: "", rules: "no" }
+    ]
+  };
+  return { PERIODS, RULES, RULE_TAG, num, perYear, checkStep, checkSettings, compute, summary, toCSV, howText, h1, money, SAMPLE };
+})();
+window.Audit = Audit;
+/* CORE-END */
+
+(() => {
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const URL_SELF = "https://casimbahadar.github.io/demo-time-audit/";
+  const blank = () => ({ name: "", minutes: "", count: "", per: "week", people: "1", wrong: "", fix: "", rules: "" });
+  let seq = 0;
+  const withId = s => Object.assign({ id: "s" + (++seq) }, s);
+  const state = { process: "", rate: "", days: "250", steps: [withId(blank())] };
+  let removed = null;
+
+  function stepCard(s, i) {
+    const f = (key, label, help, mode) => {
+      const id = key + "-" + s.id;
+      return '<div class="field"><label for="' + id + '">' + label + "</label>" + (help ? '<span class="help" id="h' + id + '">' + help + "</span>" : "") +
+        '<input type="text" id="' + id + '" data-step="' + s.id + '" data-key="' + key + '" inputmode="' + mode + '" autocomplete="off" value="' + esc(s[key]) + '" aria-describedby="' + (help ? "h" + id + " " : "") + "e" + id + '"><span class="err" id="e' + id + '"></span></div>';
+    };
+    return '<li class="step-card" id="card-' + s.id + '"><h3>Step ' + (i + 1) + "</h3>" +
+      '<div class="field"><label for="name-' + s.id + '">What happens in this step</label><input type="text" id="name-' + s.id + '" data-step="' + s.id + '" data-key="name" autocomplete="off" value="' + esc(s.name) + '" placeholder="For example, copy hours into invoices"></div>' +
+      '<div class="grid2">' + f("minutes", "Minutes each time", "", "decimal") + f("people", "People who each do it", "", "numeric") + "</div>" +
+      '<div class="field"><span class="label" id="lo-' + s.id + '">How often</span><div class="often">' +
+      '<input type="text" id="count-' + s.id + '" data-step="' + s.id + '" data-key="count" inputmode="decimal" autocomplete="off" value="' + esc(s.count) + '" aria-labelledby="lo-' + s.id + '" aria-describedby="ecount-' + s.id + '">' +
+      '<select class="full" id="per-' + s.id + '" data-step="' + s.id + '" data-key="per" aria-label="How often, period">' + Audit.PERIODS.map(p => '<option value="' + p[0] + '"' + (s.per === p[0] ? " selected" : "") + ">" + p[1] + "</option>").join("") + "</select></div>" +
+      '<span class="err" id="ecount-' + s.id + '"></span></div>' +
+      '<div class="grid2">' + f("wrong", "How often it goes wrong (%)", "", "decimal") + f("fix", "Minutes to fix it", "", "decimal") + "</div>" +
+      '<fieldset class="field rules-choice"><legend>Does it follow fixed rules?</legend>' +
+      Audit.RULES.map(r => '<label class="choice"><input type="radio" name="rules-' + s.id + '" value="' + r[0] + '" data-step="' + s.id + '" data-key="rules"' + (s.rules === r[0] ? " checked" : "") + "> " + r[1] + "</label>").join("") + "</fieldset>" +
+      (state.steps.length > 1 ? '<div class="actions"><button class="btn btn-quiet" type="button" data-remove="' + s.id + '">Remove step ' + (i + 1) + "</button></div>" : "") + "</li>";
+  }
+  function renderSteps() {
+    $("steps").innerHTML = state.steps.map(stepCard).join("");
+    $("f-process").value = state.process; $("f-rate").value = state.rate; $("f-days").value = state.days;
+  }
+
+  function showErrors(res) {
+    const bad = {};
+    res.excluded.forEach(x => { bad[state.steps[x.index].id] = x.errors; });
+    for (const s of state.steps) for (const k of ["minutes", "count", "people", "wrong", "fix"]) {
+      const msg = (bad[s.id] && bad[s.id][k]) || "", el = $(k + "-" + s.id);
+      if (!el) continue;
+      const show = msg && (touched.has(s.id + k) || tried) ? msg : "";
+      $("e" + k + "-" + s.id).textContent = show;
+      if (show) el.setAttribute("aria-invalid", "true"); else el.removeAttribute("aria-invalid");
+    }
+    for (const k of ["rate", "days"]) {
+      const msg = res.settingsErrors[k] && (touched.has(k) || tried) ? res.settingsErrors[k] : "";
+      $("e-" + k).textContent = msg;
+      if (msg) $("f-" + k).setAttribute("aria-invalid", "true"); else $("f-" + k).removeAttribute("aria-invalid");
+    }
+  }
+  // A field shows its message once the person has left it with something typed, so nothing jumps while typing.
+  const touched = new Set();
+  const tried = false;
+
+  // Grow a text box to fit its text. Measuring briefly shrinks the page, which can pull the scroll
+  // position up, so the position is put back; otherwise a button under the finger could jump away mid-tap.
+  function fitHeight(t) {
+    const y = window.scrollY;
+    t.style.height = "auto";
+    t.style.height = (t.scrollHeight + 4) + "px";
+    if (window.scrollY !== y) window.scrollTo(0, y);
+  }
+  function render() {
+    const res = Audit.compute(state);
+    showErrors(res);
+    $("days-echo").textContent = res.days !== null ? res.days : "your working days";
+    const rate = res.rate;
+    if (!res.rows.length) {
+      $("total").textContent = "Add a step with its minutes and how often it happens to see results here.";
+      $("ranked").innerHTML = ""; $("worked").textContent = "";
+    } else {
+      $("total").innerHTML = "This task takes <b>" + Audit.h1(res.totalHours) + " hours a year</b>" + (rate !== null ? ", about <b>" + Audit.money(res.totalHours * rate) + "</b> at " + Audit.money(rate) + " an hour." : ". Enter an hourly cost to see what that time costs.");
+      const max = res.rows[0].hours || 1;
+      $("ranked").innerHTML = res.rows.map((r, i) =>
+        '<li class="rank-item"><span class="rank-num" aria-hidden="true">' + (i + 1) + "</span><h4>" + esc(r.name) + '</h4><div class="rank-figs"><span><b>' + Audit.h1(r.hours) + "</b> hours a year</span>" +
+        (rate !== null ? "<span>" + Audit.money(r.hours * rate) + "</span>" : "") + '<span class="tag">' + esc(Audit.RULE_TAG[r.rules]) + "</span></div>" +
+        '<div class="rank-bar" aria-hidden="true"><span style="width:' + (r.hours / max * 100).toFixed(1) + '%"></span></div>' +
+        '<p class="rank-how">' + esc(Audit.howText(r)) + "</p></li>").join("");
+      const top = res.rows[0];
+      $("worked").textContent = "For your top step, " + top.name + ": " + Audit.howText(top) + "." + (rate !== null ? " " + Audit.h1(top.hours) + " hours × " + Audit.money(rate) + " = " + Audit.money(top.hours * rate) + " a year." : "");
+    }
+    if (res.excluded.length) {
+      $("excluded").hidden = false;
+      $("excluded").innerHTML = "<p>Not counted until they're filled in:</p><ul>" + res.excluded.map(x => "<li>" + esc(x.name) + ": " + esc(Object.values(x.errors)[0].replace(/\.$/, "").toLowerCase()) + "</li>").join("") + "</ul>";
+    } else $("excluded").hidden = true;
+    const text = Audit.summary(state, res, URL_SELF), sb = $("summary");
+    if (sb.value !== text) { sb.value = text; fitHeight(sb); }
+    return res;
+  }
+
+  $("steps").addEventListener("input", e => {
+    const el = e.target, s = state.steps.find(x => x.id === el.dataset.step);
+    if (!s) return;
+    s[el.dataset.key] = el.value;
+    render();
+  });
+  $("steps").addEventListener("change", e => {
+    const el = e.target, s = state.steps.find(x => x.id === el.dataset.step);
+    if (!s) return;
+    s[el.dataset.key] = el.value;
+    render();
+  });
+  $("steps").addEventListener("focusout", e => {
+    const el = e.target;
+    if (el.dataset.step && el.dataset.key && el.value !== "") { touched.add(el.dataset.step + el.dataset.key); render(); }
+  });
+  for (const k of ["process", "rate", "days"]) {
+    $("f-" + k).addEventListener("input", () => { state[k] = $("f-" + k).value; render(); });
+    if (k !== "process") $("f-" + k).addEventListener("focusout", () => { if ($("f-" + k).value !== "") { touched.add(k); render(); } });
+  }
+
+  $("btn-add").addEventListener("click", () => {
+    const s = withId(blank());
+    state.steps.push(s);
+    // Append only the new card. The first card gets its Remove button when there are two.
+    if (state.steps.length === 2) renderSteps();
+    else $("steps").insertAdjacentHTML("beforeend", stepCard(s, state.steps.length - 1));
+    render();
+    $("name-" + s.id).focus();
+  });
+  $("steps").addEventListener("click", e => {
+    const b = e.target.closest("[data-remove]");
+    if (!b) return;
+    const i = state.steps.findIndex(x => x.id === b.dataset.remove);
+    removed = { step: state.steps[i], index: i };
+    state.steps.splice(i, 1);
+    renderSteps(); render();
+    $("undo-text").textContent = "Removed " + (removed.step.name.trim() || "step " + (i + 1)) + ".";
+    $("undo").hidden = false;
+    $("btn-undo").focus();
+  });
+  $("btn-undo").addEventListener("click", () => {
+    if (!removed) return;
+    state.steps.splice(removed.index, 0, removed.step);
+    const id = removed.step.id; removed = null;
+    $("undo").hidden = true;
+    renderSteps(); render();
+    $("name-" + id).focus();
+  });
+
+  function loadSample() {
+    state.process = Audit.SAMPLE.process; state.rate = Audit.SAMPLE.rate; state.days = Audit.SAMPLE.days;
+    state.steps = Audit.SAMPLE.steps.map(s => withId(Object.assign({}, s)));
+    touched.clear(); removed = null; $("undo").hidden = true;
+    renderSteps(); render();
+  }
+  $("btn-sample").addEventListener("click", () => {
+    loadSample();
+    $("announce").textContent = "Sample task loaded. Results are below the steps.";
+    $("h-results").scrollIntoView({ block: "start", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    $("h-results").focus({ preventScroll: true });
+  });
+  $("btn-start").addEventListener("click", () => {
+    $("f-process").focus();
+    $("h-steps").scrollIntoView({ block: "start", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  });
+
+  $("btn-copy").addEventListener("click", async () => {
+    try {
+      await Promise.race([navigator.clipboard.writeText($("summary").value), new Promise((_, no) => setTimeout(() => no(new Error("timeout")), 1500))]);
+      $("copied").textContent = "Copied.";
+    }
+    catch (e) { $("summary").focus(); $("summary").select(); $("copied").textContent = "Copying isn't allowed here. The summary is selected, so you can copy it yourself."; }
+  });
+  $("btn-csv").addEventListener("click", () => {
+    const res = Audit.compute(state);
+    if (!res.rows.length) { $("copied").textContent = "There's nothing to download yet. Add a step with its minutes and how often it happens."; return; }
+    const blob = new Blob(["\uFEFF" + Audit.toCSV(res)], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob), a = document.createElement("a");
+    a.href = url; a.download = "time-audit.csv"; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  });
+
+  renderSteps();
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Workflow time audit demo | Casim Bahadar</title>
+<meta name="description" content="List the steps of a task you repeat and see which steps take the most hours a year, worked out only from your own numbers with the formula shown. Runs in your browser.">
+<meta name="theme-color" content="#F7F5FB">
+__CSP__
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Crect x=%275%27 y=%271%27 width=%2710%27 height=%2710%27 rx=%272%27 fill=%27%23A993E4%27/%3E%3Crect x=%271%27 y=%275%27 width=%2710%27 height=%2710%27 rx=%272%27 fill=%27%235A3DB8%27/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400..900&display=swap">
+<style>
+__BASECSS__
+/* Demo 4 additions */
+.scroll { position: relative; }
+.intro-short { padding-bottom: 0; }
+.field { margin: 0 0 var(--s4); }
+.field > label, fieldset.field > legend { display: block; font-weight: 700; margin-bottom: var(--s1); font-size: 0.9375rem; }
+.help { display: block; font-size: 0.875rem; color: var(--slate); margin-bottom: var(--s1); }
+input[type="text"] { width: 100%; font: inherit; font-size: 1rem; min-height: 3rem; padding: var(--s2) var(--s3); border: 1.5px solid var(--slate); border-radius: var(--r-md); background: #fff; color: var(--ink); }
+select.full { width: 100%; min-height: 3rem; }
+[aria-invalid="true"] { border-color: var(--error) !important; border-width: 2px !important; }
+.err { display: block; color: var(--error); font-weight: 650; font-size: 0.875rem; margin-top: var(--s1); }
+.err:empty { display: none; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 var(--s3); align-items: end; }
+.grid2 > .field { min-width: 0; }
+.settings { display: grid; gap: 0 var(--s4); max-width: 40rem; }
+@media (min-width: 40rem) { .settings { grid-template-columns: 2fr 1fr 1fr; } }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s4); max-width: 40rem; }
+.step-card { padding: var(--s4); border: 1.5px solid var(--line); border-radius: var(--r-md); background: #fff; }
+.step-card h3 { margin: 0 0 var(--s3); font-size: 1.05rem; }
+.often { display: grid; grid-template-columns: 6rem 1fr; gap: var(--s2); }
+.field > .label { display: block; font-weight: 700; margin-bottom: var(--s1); font-size: 0.9375rem; }
+.rules-choice { display: grid; gap: 0; }
+.choice, .field > label.choice { display: flex; align-items: center; gap: var(--s3); min-height: 2.75rem; font-size: 0.9375rem; font-weight: 500; margin: 0; }
+.step-card .actions { margin-bottom: 0; }
+.undo { margin: var(--s4) 0 0; padding: var(--s3) var(--s4); border-radius: var(--r-md); background: var(--mist); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s2); max-width: 40rem; }
+.undo p { margin: 0; }
+.total-line { font-size: 1.125rem; font-weight: 600; max-width: 60ch; }
+.total-line b { font-weight: 850; }
+.honest { max-width: 44rem; padding: var(--s4); background: var(--mist); border-radius: var(--r-md); }
+.honest p { margin: 0; }
+.ranked { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s4); max-width: 44rem; }
+.rank-item { display: grid; grid-template-columns: 2rem 1fr; gap: var(--s1) var(--s3); padding: var(--s4); border: 1.5px solid var(--line); border-radius: var(--r-md); background: #fff; }
+.rank-num { grid-row: span 3; display: inline-grid; place-items: center; width: 2rem; height: 2rem; border-radius: var(--r-pill); background: var(--ink); color: var(--paper); font-weight: 800; }
+.rank-item h4 { margin: 0; font-size: 1.05rem; overflow-wrap: anywhere; }
+.rank-figs { display: flex; flex-wrap: wrap; gap: var(--s1) var(--s4); font-variant-numeric: tabular-nums; }
+.rank-figs b { font-weight: 850; }
+.rank-bar { height: 0.75rem; background: var(--mist); border-radius: var(--r-pill); overflow: hidden; }
+.rank-bar span { display: block; height: 100%; background: var(--violet); border-radius: var(--r-pill); }
+.rank-how { grid-column: 2; font-size: 0.875rem; color: var(--slate); margin: 0; }
+.tag { display: inline-block; font-size: 0.875rem; font-weight: 700; padding: 0 var(--s2); border-radius: var(--r-md); background: var(--lav); }
+.formula { max-width: 44rem; padding: var(--s4); border: 1.5px solid var(--line); border-radius: var(--r-md); background: #fff; }
+.formula p { margin: 0 0 var(--s2); }
+.formula p:last-child { margin: 0; }
+.formula code { font-family: inherit; font-weight: 700; }
+.summary-box { width: 100%; max-width: 44rem; min-height: 12rem; font: inherit; font-size: 1rem; line-height: 1.5; padding: var(--s3); border: 1.5px solid var(--line); border-radius: var(--r-md); background: #fff; color: var(--ink); }
+.excluded { max-width: 44rem; padding: var(--s3) var(--s4); border-radius: var(--r-md); background: var(--changed-bg); border: 1.5px solid #8A6A12; }
+.excluded p { margin: 0; }
+.excluded ul { margin: var(--s2) 0 0; padding-left: var(--s6); }
+</style>
+</head>
