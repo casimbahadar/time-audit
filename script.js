@@ -109,7 +109,7 @@ window.Audit = Audit;
 (() => {
   const $ = id => document.getElementById(id);
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const URL_SELF = "https://casimbahadar.github.io/demo-time-audit/";
+  const URL_SELF = "https://casimbahadar.github.io/time-audit/";
   const blank = () => ({ name: "", minutes: "", count: "", per: "week", people: "1", wrong: "", fix: "", rules: "" });
   let seq = 0;
   const withId = s => Object.assign({ id: "s" + (++seq) }, s);
