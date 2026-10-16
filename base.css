@@ -168,3 +168,6 @@ footer p { margin: 0 0 var(--s2); }
 
 [hidden] { display: none !important; }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; animation: none !important; } }
+
+.restored { margin-top: var(--s4); padding: var(--s3) var(--s4); border-radius: var(--r-md); background: var(--mist); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s2); }
+.restored p { margin: 0; font-weight: 650; }

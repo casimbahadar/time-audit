@@ -192,7 +192,27 @@ window.Audit = Audit;
     } else $("excluded").hidden = true;
     const text = Audit.summary(state, res, URL_SELF), sb = $("summary");
     if (sb.value !== text) { sb.value = text; fitHeight(sb); }
+    save();
     return res;
+  }
+
+  // What's typed is kept in this browser tab only (sessionStorage), so a reload doesn't lose it.
+  // Closing the tab clears it. If the browser blocks storage, the page works as before.
+  const KEY = "time-audit:v1";
+  function save() {
+    try { sessionStorage.setItem(KEY, JSON.stringify({ process: state.process, rate: state.rate, days: state.days, steps: state.steps.map(({ id, ...rest }) => rest) })); } catch (e) { /* storage unavailable */ }
+  }
+  function restore() {
+    let d;
+    try { d = JSON.parse(sessionStorage.getItem(KEY) || "null"); } catch (e) { return false; }
+    const str = v => typeof v === "string" ? v.slice(0, 500) : "";
+    if (!d || typeof d !== "object" || !Array.isArray(d.steps) || !d.steps.length) return false;
+    const steps = d.steps.slice(0, 5000).filter(x => x && typeof x === "object").map(x => withId(Object.assign(blank(), Object.fromEntries(Object.keys(blank()).map(k => [k, str(x[k])])))));
+    if (!steps.length) return false;
+    const untouched = !str(d.process) && !str(d.rate) && steps.length === 1 && !Object.entries(steps[0]).some(([k, v]) => k !== "id" && v && v !== blank()[k]);
+    if (untouched) return false;
+    state.process = str(d.process); state.rate = str(d.rate); state.days = str(d.days) || "250"; state.steps = steps;
+    return true;
   }
 
   $("steps").addEventListener("input", e => {
@@ -278,6 +298,14 @@ window.Audit = Audit;
     setTimeout(() => URL.revokeObjectURL(url), 4000);
   });
 
+  $("btn-fresh").addEventListener("click", () => {
+    state.process = ""; state.rate = ""; state.days = "250"; state.steps = [withId(blank())];
+    touched.clear(); removed = null; $("undo").hidden = true; $("restored").hidden = true;
+    renderSteps(); render();
+    $("f-process").focus();
+  });
+
+  if (restore()) $("restored").hidden = false;
   renderSteps();
   render();
 })();

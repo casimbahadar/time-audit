@@ -18,7 +18,7 @@ These figures are time spent now. They are not an estimate of time saved, and th
 
 ## Privacy
 
-Nothing is saved or sent. Everything is worked out in your browser, the page's Content-Security-Policy blocks outgoing connections, and closing the page clears it. The only outside request is for the Schibsted Grotesk font from Google Fonts.
+Nothing is sent anywhere. Everything is worked out in your browser, and the page's Content-Security-Policy blocks outgoing connections. What you type is kept in this browser tab only (sessionStorage), so a reload doesn't lose it, and closing the tab clears it. A note says when an earlier task has been brought back, with a button to start a new blank one. The only outside request is for the Schibsted Grotesk font from Google Fonts.
 
 ## Sample data
 
